@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -10,18 +10,23 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
-    public Text ScoreText;
-    public GameObject GameOverText;
+    public TextMeshProUGUI displayHighScoreText;
+    public TextMeshProUGUI myScoreText;
+    public TextMeshProUGUI myGameOverText;
+    public TextMeshProUGUI playAgainText;
+    public TextMeshProUGUI nameRequestText;
+    public TMP_InputField nameInputField;
+
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
-
     
-    // Start is called before the first frame update
     void Start()
     {
+        DisplayHighScore();
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -65,12 +70,46 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        myScoreText.text = "Score: " + m_Points;
     }
 
     public void GameOver()
     {
         m_GameOver = true;
-        GameOverText.SetActive(true);
+        myGameOverText.gameObject.SetActive(true);
+        playAgainText.gameObject.SetActive(true);
+
+        if (m_Points > GameManager.Instance.highScore)
+        {
+            nameRequestText.gameObject.SetActive(true);
+            nameInputField.gameObject.SetActive(true);
+        }
+    }
+
+    public void SetData()
+    {
+        GameManager.Instance.playerName = nameInputField.text;
+        GameManager.Instance.highScore = m_Points;
+
+        GameManager.Instance.SaveHighScoreData();
+        GameManager.Instance.LoadHighScoreData();
+
+        nameRequestText.gameObject.SetActive(false);
+        nameInputField.gameObject.SetActive(false);
+
+        DisplayHighScore();
+    }
+
+    public void DisplayHighScore()
+    {
+        if (GameManager.Instance.playerName != "ResetData")
+        {
+            displayHighScoreText.text = "High Score: " + GameManager.Instance.highScore + "   -  " + GameManager.Instance.playerName;
+        }
+    }
+
+    public void ReturnToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }
